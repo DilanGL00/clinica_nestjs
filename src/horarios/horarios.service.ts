@@ -4,7 +4,7 @@ import { UpdateHorarioDto } from './dto/update-horario.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Horario } from './entities/horario.entity';
 import { Odontologo } from 'src/odontologos/entities/odontologo.entity';
-import { Repository } from 'typeorm';
+import { MoreThanOrEqual, Repository } from 'typeorm';
 import { NotFoundError } from 'rxjs';
 
 @Injectable()
@@ -18,6 +18,30 @@ export class HorariosService {
 
   async createHorario(createHorarioDto: CreateHorarioDto): Promise<Horario> {
     const { id_odontologo, hora_inicio, hora_fin, fecha } = createHorarioDto;
+    const odontologo = await this.odontologosRepository.findOneBy({
+      id: id_odontologo,
+    });
+
+    if (!odontologo) {
+      throw new NotFoundException(
+        `Odontólogo con id ${id_odontologo} no encontrado`,
+      );
+    }
+
+    const horario = new Horario();
+    horario.odontologo = odontologo;
+    horario.hora_inicio = hora_inicio;
+    horario.hora_fin = hora_fin;
+    horario.fecha = fecha;
+
+    return this.horariosRepository.save(horario);
+  }
+
+  async createHorarioByLogin(
+    createHorarioDto: CreateHorarioDto,
+    id_odontologo: number,
+  ): Promise<Horario> {
+    const { hora_inicio, hora_fin, fecha } = createHorarioDto;
     const odontologo = await this.odontologosRepository.findOneBy({
       id: id_odontologo,
     });
@@ -78,5 +102,16 @@ export class HorariosService {
   async removeHorario(id: number): Promise<{ affected?: number }> {
     const result = await this.horariosRepository.delete(id);
     return result;
+  }
+
+  //Otros metodos
+
+  async getHorariosDisponibles(): Promise<Horario[]> {
+    const currentDate = new Date();
+    return this.horariosRepository.find({
+      where: {
+        fecha: MoreThanOrEqual(currentDate),
+      },
+    });
   }
 }

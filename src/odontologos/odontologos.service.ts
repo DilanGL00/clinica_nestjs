@@ -59,10 +59,6 @@ export class OdontologosService {
     return this.odontologosRepository.findOneBy({ nombre_usuario });
   }
 
-  async findOneByUserName(nombre_usuario: string): Promise<Odontologo> {
-    return this.odontologosRepository.findOneBy({ nombre_usuario });
-  }
-
   async findById(id: number): Promise<Odontologo> {
     return this.odontologosRepository.findOneBy({ id });
   }

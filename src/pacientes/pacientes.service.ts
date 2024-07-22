@@ -89,10 +89,6 @@ export class PacientesService {
     return this.pacientesRepository.findOneBy({ nombre_usuario });
   }
 
-  async findOneByUserName(nombre_usuario: string): Promise<Paciente> {
-    return this.pacientesRepository.findOneBy({ nombre_usuario });
-  }
-
   async findById(id: number): Promise<Paciente> {
     return this.pacientesRepository.findOneBy({ id });
   }

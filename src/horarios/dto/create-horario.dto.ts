@@ -1,4 +1,4 @@
-import { IsDateString, IsNotEmpty, Matches } from 'class-validator';
+import { IsBoolean, IsDateString, IsNotEmpty, Matches } from 'class-validator';
 
 export class CreateHorarioDto {
   @IsNotEmpty()

@@ -17,7 +17,7 @@ export class CitasService {
     private readonly horariosRepository: Repository<Horario>,
   ) {}
 
-  async createCita(createCitaDto: CreateCitaDto): Promise<Cita> {
+  async createCitas(createCitaDto: CreateCitaDto): Promise<Cita> {
     const { id_paciente, id_horario, hora_inicio, duracion, estado } =
       createCitaDto;
     const paciente = await this.pacientesRepository.findOneBy({
@@ -104,7 +104,8 @@ export class CitasService {
     return result;
   }
 
-  // Add the following method to CitasService
+  // Metodos basados por rol
+
   async findCitasByPaciente(id_paciente: number) {
     return this.citasRepository.find({
       where: { paciente: { id: id_paciente } },
@@ -117,5 +118,32 @@ export class CitasService {
       where: { horario: { odontologo: { id: id_odontologo } } },
       relations: ['horario', 'paciente'],
     });
+  }
+
+  async createCitaByPaciente(
+    createCitaDto: CreateCitaDto,
+    id_paciente: number,
+  ) {
+    const horario = await this.horariosRepository.findOne({
+      where: { id: createCitaDto.id_horario },
+    });
+    if (!horario) {
+      throw new NotFoundException('Horario not found');
+    }
+
+    const cita = this.citasRepository.create({
+      ...createCitaDto,
+      paciente: { id: id_paciente },
+      horario: horario,
+    });
+    return this.citasRepository.save(cita);
+  }
+
+  async getHorariosDisponibles(): Promise<Horario[]> {
+    const currentDate = new Date();
+    return this.horariosRepository
+      .createQueryBuilder('horario')
+      .where('horario.fecha >= :currentDate', { currentDate })
+      .getMany();
   }
 }

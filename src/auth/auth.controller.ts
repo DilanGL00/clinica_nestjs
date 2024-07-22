@@ -31,14 +31,6 @@ a hacer en esa peticion y le llega una respuesta
 y esa respuesta se la manda a un cliente
 */
 
-export interface RequestWithPaciente extends Request {
-  paciente: Paciente; // Puedes ajustar el tipo según tu modelo de Paciente
-}
-
-export interface RequestWithOdontologo extends Request {
-  odontologo: Odontologo; // Puedes ajustar el tipo según tu modelo de Odontologo
-}
-
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -63,59 +55,15 @@ export class AuthController {
     return this.authService.login(loginDto);
   }
 
-  /*
   @Get('profile')
-  @Roles(Role.PACIENTE)
-  @UseGuards(AuthGuard, RolesGuard)
-  profile(@Req() req: RequestWithPaciente) {
-    return this.authService.profile(req.paciente);
-  }
-  */
-
-  @Get('profile')
-  @Auth(Role.PACIENTE)
-  @UseGuards(AuthGuard, RolesGuard)
-  profile(@Req() req: RequestWithPaciente) {
-    return this.authService.profile(req.paciente);
-  }
-
-  /*@Get('profile')
   @UseGuards(AuthGuard)
   profile(@Request() req) {
-    // Return profile based on the authenticated user's role
-    if (req.paciente) {
-      return this.authService.getPacienteProfile(req.paciente.nombre_usuario);
-    } else if (req.odontologo) {
-      return this.authService.getOdontologoProfile(
-        req.odontologo.nombre_usuario,
-      );
+    if (req.role === Role.PACIENTE) {
+      return this.authService.getPacienteProfile(req.nombre_usuario);
+    } else if (req.role === Role.ODONTOLOGO) {
+      return this.authService.getOdontologoProfile(req.nombre_usuario);
     } else {
       throw new UnauthorizedException('Invalid user role');
     }
-  }
-  */
-
-  // Endpoint para obtener perfil del paciente
-  @Get('perfil-paciente')
-  @UseGuards(AuthGuard)
-  async getPerfilPaciente(@Request() req: RequestWithPaciente) {
-    const paciente = await this.pacientesService.findById(req.paciente.id);
-    if (!paciente) {
-      throw new NotFoundException('Paciente not found');
-    }
-    return paciente;
-  }
-
-  // Endpoint para obtener perfil del odontólogo
-  @Get('perfil-odontologo')
-  @UseGuards(AuthGuard)
-  async getPerfilOdontologo(@Request() req: RequestWithOdontologo) {
-    const odontologo = await this.odontologosService.findById(
-      req.odontologo.id,
-    );
-    if (!odontologo) {
-      throw new NotFoundException('Odontólogo not found');
-    }
-    return odontologo;
   }
 }

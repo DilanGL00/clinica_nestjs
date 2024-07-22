@@ -6,10 +6,17 @@ import {
   Patch,
   Param,
   Delete,
+  UseGuards,
+  Request,
 } from '@nestjs/common';
 import { CitasService } from './citas.service';
 import { CreateCitaDto } from './dto/create-cita.dto';
 import { UpdateCitaDto } from './dto/update-cita.dto';
+import { AuthGuard } from 'src/auth/guard/auth.guard';
+import { RolesGuard } from 'src/auth/guard/roles.guard';
+import { Roles } from 'src/auth/decorators/roles.decorator';
+import { Role } from 'src/common/enums/user-role.enum';
+import { Horario } from 'src/horarios/entities/horario.entity';
 
 @Controller('citas')
 export class CitasController {
@@ -17,7 +24,7 @@ export class CitasController {
 
   @Post()
   create(@Body() createCitaDto: CreateCitaDto) {
-    return this.citasService.createCita(createCitaDto);
+    return this.citasService.createCitas(createCitaDto);
   }
 
   @Get()
@@ -40,14 +47,17 @@ export class CitasController {
     return this.citasService.removeCita(+id);
   }
 
-  // Add the following endpoints to CitasController
-  @Get('paciente/:id_paciente')
-  findCitasByPaciente(@Param('id_paciente') id_paciente: number) {
-    return this.citasService.findCitasByPaciente(id_paciente);
+  //nuevos metodos
+
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.PACIENTE)
+  @Post()
+  createCitaBypaciente(@Body() createCitaDto: CreateCitaDto, @Request() req) {
+    return this.citasService.createCitaByPaciente(createCitaDto, req.user.id);
   }
 
-  @Get('odontologo/:id_odontologo')
-  findCitasByOdontologo(@Param('id_odontologo') id_odontologo: number) {
-    return this.citasService.findCitasByOdontologo(id_odontologo);
+  @Get('/horarios-disponibles')
+  async getHorariosDisponibles(): Promise<Horario[]> {
+    return this.citasService.getHorariosDisponibles();
   }
 }

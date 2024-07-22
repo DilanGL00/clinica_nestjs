@@ -27,14 +27,8 @@ export class AuthGuard implements CanActivate {
         secret: jwtConstants.secret,
       });
 
-      // Verificar el tipo de usuario basado en el payload
-      if (payload.role === 'paciente') {
-        request['PACIENTE'] = { nombre_usuario: payload.nombre_usuario };
-      } else if (payload.role === 'odontologo') {
-        request['ODONTOLOGO'] = { nombre_usuario: payload.nombre_usuario };
-      } else {
-        throw new UnauthorizedException('Invalid user role');
-      }
+      request['role'] = payload.role;
+      request['nombre_usuario'] = payload.nombre_usuario;
     } catch {
       throw new UnauthorizedException();
     }
